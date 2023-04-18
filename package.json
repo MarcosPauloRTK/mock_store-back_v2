@@ -1,0 +1,23 @@
+{
+  "name": "ra-mock-store-v2",
+  "version": "1.0.0",
+  "description": "Projeto clone da API Fake Store explorando alguns módulos do Node.JS como Express e Knex, e alguns conceitos de requisição HTTP.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon ./src/index.ts"
+  },
+  "author": "Marcos Paulo",
+  "license": "ISC",
+  "dependencies": {
+    "babel": "^6.23.0",
+    "express": "^4.18.2",
+    "knex": "^2.4.2",
+    "sqlite3": "^5.1.6",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17"
+  }
+}
