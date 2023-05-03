@@ -1,17 +1,20 @@
-import Express from "express";
-import { router as productsRouter } from "./routes/products";
-import { router as categoriesRouter } from "./routes/categories";
+import categoryRouter from "./routes/category";
+import express from "express";
 
-const app = Express();
+const app = express();
 
-app.use(Express.json());
-app.set("json spaces", 2);
+app.use(express.json())
+app.use("/products/categories", categoryRouter);
+app.use("/products/category", categoryRouter);
 
-app.get("/", (request, response) => {
-    response.send("The API is running! :)")
-} )
-app.use("/products", productsRouter);
-app.use("/products/categories", categoriesRouter);
+app.get("/", (_req, res) => {
+  res.send("API Fake Store");
+});
 
-const port = 3000;
-app.listen(port, () => console.log(`Listening on port ${port}...`));
+const port = process.env.PORT || 3000;
+app.listen(port, () =>
+  console.log(
+    `Listening on the port ${port}...`,
+    `Server at: http://localhost:${port}`
+  )
+);

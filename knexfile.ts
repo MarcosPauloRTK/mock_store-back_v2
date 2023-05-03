@@ -2,7 +2,7 @@ import type { Knex } from "knex";
 
 // Update with your config settings.
 
-const config: Knex.Config = {
+const config:  Knex.Config = {
   client: "sqlite3",
   connection: {
     filename: "./dev.sqlite3",
@@ -10,8 +10,8 @@ const config: Knex.Config = {
   migrations: {
     directory: "./src/database",
   },
-  seeds: {
-    directory: "./src/seeds",
+  seeds:{
+    directory:"./src/seed"
   },
   useNullAsDefault: true,
 };
