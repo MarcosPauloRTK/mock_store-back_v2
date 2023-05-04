@@ -1,5 +1,5 @@
 import knex from "knex";
-import config from "../../knexfile";
+import config from "../../../knexfile";
 import Joi, { bool } from "joi";
 
 const knexInstance = knex(config);
@@ -28,6 +28,26 @@ export async function selectCategories() {
 
   const categories = categoriesDB.map(({ category }) => category);
   return categories;
+}
+
+export async function getCategoryID(category: string) {
+  const categoriesDB: CategoryDB[] = await knexInstance("categories").select(
+    "*"
+  );
+
+  const categoryDB = categoriesDB.find(
+    (element) => element.category === category
+  );
+  return categoryDB ? categoryDB["id"] : undefined;
+}
+
+export async function getCategoryByID(id: number) {
+  const categoriesDB: CategoryDB[] = await knexInstance("categories").select(
+    "*"
+  );
+
+  const categoryDB = categoriesDB.find((element) => element.id === id);
+  return categoryDB ? categoryDB["category"] : "";
 }
 
 export async function categoryExists(category: string) {

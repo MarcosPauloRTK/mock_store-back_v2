@@ -1,27 +1,20 @@
 import { Request, Response } from "express";
 import {
+  selectProductsLimited,
   selectProducts,
   getProductByID,
   insertProduct,
-  deleteProduct,
   updateProduct,
-  selectProductsByCategory
-} from "../services/productServices";
-
-
-const indexCategory = async(request:Request, response: Response) => {
-  try {
-    const filteredProducts = await selectProductsByCategory(request.params.category);
-
-    response.status(200).send(filteredProducts);
-  } catch (error) {
-    response.send(error)
-  }
-}
+  deleteProduct,
+} from "../../services/products";
 
 const index = async (request: Request, response: Response) => {
   try {
-    const products = await selectProducts();
+    const limit = String(request.query.limit || "");
+
+    const products = limit
+      ? await selectProductsLimited(parseInt(limit))
+      : await selectProducts();
     response.send(products);
   } catch (error) {
     response.send(error);
@@ -39,12 +32,13 @@ const show = async (request: Request, response: Response) => {
 
 const insert = async (request: Request, response: Response) => {
   try {
-    const product = request.body;
+    const product: object = request.body;
+
     const newProduct = await insertProduct(product);
 
     response.status(200).send(newProduct);
   } catch (error) {
-    response.send(error);
+    response.status(400).send(error);
   }
 };
 
@@ -71,4 +65,4 @@ const update = async (request: Request, response: Response) => {
   }
 };
 
-export default {show, index, indexCategory, remove, update, insert};
+export { show, index, remove, update, insert };

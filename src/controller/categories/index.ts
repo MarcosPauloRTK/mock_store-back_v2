@@ -1,15 +1,9 @@
 import { Request, Response } from "express";
-import knex from "knex";
-import config from "../../knexfile";
 import {
   selectCategories,
   deleteCategory,
   insertCategory,
-} from "../repositories/categoriesRepository";
-import type { CategoryDB } from "../repositories/categoriesRepository";
-
-const knexInstance = knex(config);
-const categoriesTable = knexInstance("categories");
+} from "../../repositories/categories";
 
 const index = async (request: Request, response: Response) => {
   try {
@@ -34,7 +28,6 @@ const insert = async (request: Request, response: Response) => {
   } catch (error) {
     response.send(error);
   }
-  
-}
+};
 
 export default { index, remove, insert };
