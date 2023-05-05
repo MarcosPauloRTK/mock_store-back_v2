@@ -17,14 +17,19 @@ const index = async (request: Request, response: Response) => {
 const remove = async (request: Request, response: Response) => {
   try {
     const value = await deleteCategory(request.params.category);
+    response.status(200).send(value);
   } catch (error) {
+    console.log(error);
+    console.log(error);
+
     response.send(error);
   }
 };
 
 const insert = async (request: Request, response: Response) => {
   try {
-    const value = await insertCategory(request.params.category);
+    const value = await insertCategory(request.body.category);
+    response.status(200).send(value);
   } catch (error) {
     response.send(error);
   }

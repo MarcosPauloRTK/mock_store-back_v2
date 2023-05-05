@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import type {Product} from "../model/product"
+import type {Product} from "../repositories/products"
 
 export async function seed(knex: Knex): Promise<void> {
   // Deletes ALL existing entries

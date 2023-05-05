@@ -1,19 +1,22 @@
 import knex from "knex";
 import config from "../../../knexfile";
-import Joi, { bool } from "joi";
-
+import Joi from "joi";
+import type { CustomHelpers } from "joi";
+import { ProductDB, Product, deleteProduct } from "../../repositories/products";
 const knexInstance = knex(config);
 
-const JOICategory = Joi.string()
-  .min(5)
-  .external(async (category) => {
-    const boolean = await categoryExists(category);
-
+const JOICategory = Joi.string().external(
+  async (value: string, helpers: CustomHelpers) => {
+    const boolean = await categoryExists(value);
     if (boolean) {
-      throw Error(`The following category already exists: ${category}`);
+      return helpers.error(
+        "The given category already exists in the database."
+      );
+    } else {
+      return value;
     }
-    return category;
-  });
+  }
+);
 
 export type Category = string;
 export type CategoryDB = {
@@ -53,33 +56,48 @@ export async function getCategoryByID(id: number) {
 export async function categoryExists(category: string) {
   const search: CategoryDB[] = await knexInstance("categories")
     .select("*")
-    .where({ category: category });
+    .where("category", category);
 
-  return search.length ? true : false;
+  return Boolean(search.length);
 }
 
 export async function insertCategory(category: string) {
   const value = await JOICategory.validateAsync(category);
+  console.log(value);
 
-  const newCategory = await knexInstance("categories")
-    .insert(value)
-    .returning("*");
+  const newCategory = await knexInstance("categories").insert({
+    category: value,
+  });
 
-  return newCategory;
+  return { msg: "Sucess", index: newCategory };
 }
 
 export async function deleteCategory(category: string) {
-  const productDeleted = await knexInstance("products")
-    .where("categories.category", category)
-    .join("categories", "categories.id", "=", "products.category_id")
-    .returning("*");
-  // .del()
+  const category_id = await getCategoryID(category);
 
-  const categoryDB = await knexInstance("categories").where(
-    "category",
-    category
+  if (!category_id) {
+    throw new Error(
+      `The category refered doesn't exists in the database. Category: ${category}`
+    );
+  }
+
+  const affectedProductsDB = await knexInstance("products")
+    .select("id")
+    .where("category_id", category_id);
+
+  const affectedProducts = affectedProductsDB.map(({ id }) => id);
+
+  const deletedProducts = await Promise.all(
+    affectedProducts.map(async (id) => await deleteProduct(id))
   );
-  // .del();
 
-  return { categoryDB, productDeleted };
+  await knexInstance("categories").where("id", category_id).del()
+  
+  return {
+    msg: "Success",
+    category: category,
+    numProductsAffected: deletedProducts.length,
+    productsDeleted: deletedProducts,
+  };
+
 }
