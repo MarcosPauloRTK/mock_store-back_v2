@@ -7,7 +7,7 @@ import category from "../../controller/category";
 
 const knexInstance = knex(config);
 
-const JOIProduct = Joi.object({
+export const JOIProduct = Joi.object({
   title: Joi.string().min(5),
   price: Joi.number().greater(0),
   description: Joi.string(),
@@ -67,7 +67,7 @@ export type Product = {
   rating: { rate: number; count: number };
 };
 
-async function transformProductToProductRawDB(product: Product) {
+async function fromProduct2ProductRawDB(product: Product) {
   const productsRawDB: { [prop: string]: any } = {
     title: product.title,
     price: product.price,
@@ -85,34 +85,11 @@ async function transformProductToProductRawDB(product: Product) {
   return value;
 }
 
-export async function selectProducts() {
-  const productsDB: ProductDB[] = await knexInstance("products")
-    .select(
-      "products.id",
-      "products.title",
-      "products.price",
-      "products.description",
-      "products.image",
-      "products.rate",
-      "products.count",
-      "categories.category as category"
-    )
-    .join("categories", "categories.id", "=", "products.category_id");
-
-  if (!productsDB.length) {
-    throw Error("There is no products avaiable.");
-  }
-
-  const products: Product[] = productsDB.map((product) => {
-    return { ...product, rating: { rate: product.rate, count: product.count } };
-  });
-
-  return products;
-}
-
-export async function selectProductsByCategory(category: string) {
-  await categoryExists(category);
-
+export async function selectProducts(
+  category?: string,
+  id?: number,
+  limit?: number
+) {
   const productsDB: ProductDB[] = await knexInstance("products")
     .select(
       "products.id",
@@ -125,80 +102,34 @@ export async function selectProductsByCategory(category: string) {
       "categories.category as category"
     )
     .join("categories", "categories.id", "=", "products.category_id")
-    .where({ "categories.category": category });
+    .modify((builder) => {
+      if (category) {
+        builder.where("categories.category", category);
+      }
+      if (id) {
+        builder.where("products.id", id);
+      }
+      if (limit) {
+        builder.limit(limit);
+      }
+    });
 
-  if (!productsDB.length) {
-    throw Error("There is no products avaiable.");
-  }
-
-  const products: Product[] = productsDB.map((product) => {
-    return { ...product, rating: { rate: product.rate, count: product.count } };
-  });
-
-  return products;
+  return productsDB;
 }
 
-export async function getProductByID(id: number) {
-  const products: Product[] = await knexInstance("products")
-    .select(
-      "products.id",
-      "products.title",
-      "products.price",
-      "products.description",
-      "products.image",
-      "products.rate",
-      "products.count",
-      "categories.category as category"
-    )
-    .join("categories", "categories.id", "=", "products.category_id")
-    .where({ "products.id": id });
-
-  if (!products.length) throw Error("No product was found for the given ID.");
-
-  return products[0];
-}
-
-export async function insertProduct(product: object) {
-  const value: Product = await JOIProduct.validateAsync(product, {
-    abortEarly: false,
-  });
-
-  const newProduct = await transformProductToProductRawDB(value);
+export async function insertProduct(product: Product) {
+  const newProduct = await fromProduct2ProductRawDB(product);
   const index = await knexInstance("products").insert(newProduct);
 
-  return getProductByID(index[0]);
+  return index[0];
 }
 
-export async function updateProduct(id: number, product: object) {
-  let updatedProduct = await getProductByID(id);
-
-  if (!updatedProduct) {
-    throw Error(
-      "No product was found for the given ID. So it can not be deleted."
-    );
-  }
-
-  const value = await JOIProduct.validateAsync(product, {
-    presence: "optional",
-  });
-
-  let flattenValue = await transformProductToProductRawDB(value);
-
-  await knexInstance("products").update(flattenValue).where("id", id);
-
-  return await getProductByID(id);
+export async function updateProduct(id: number, product: Product) {
+  await knexInstance("products")
+    .update(fromProduct2ProductRawDB(product))
+    .where("id", id);
 }
 
 export async function deleteProduct(id: number) {
-  const deletedProduct: Product = await getProductByID(id);
-
   await knexInstance("products").where("id", id).del();
-
-  if (!deletedProduct) {
-    throw Error(
-      "No product was found for the given ID. So it can not be deleted."
-    );
-  } else {
-    return deletedProduct;
-  }
 }

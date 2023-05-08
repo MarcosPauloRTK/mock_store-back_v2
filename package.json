@@ -4,6 +4,7 @@
   "description": "Segunda versão da fake store utilizando algumas bibliotecas do Node.JS como Express",
   "main": "src/index.ts",
   "scripts": {
+    "reset_db": "del \"./dev.sqlite3\" && npx knex migrate:latest && npx knex seed:run",
     "start": "nodemon src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

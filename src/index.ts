@@ -7,7 +7,7 @@ app.use(express.json());
 
 app.use("/products", productsRouter);
 
-app.get("/", (_req, res) => {
+app.get("/api/v1", (_req, res) => {
   res.send("API Fake Store");
 });
 
