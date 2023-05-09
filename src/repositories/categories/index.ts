@@ -2,7 +2,7 @@ import knex from "knex";
 import config from "../../../knexfile";
 import Joi from "joi";
 import type { CustomHelpers } from "joi";
-import { ProductDB, Product, deleteProduct } from "../../repositories/products";
+import { deleteProduct } from "../../repositories/products";
 const knexInstance = knex(config);
 
 export const JOICategory = Joi.string().external(

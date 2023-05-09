@@ -3,7 +3,7 @@ import {
   selectCategories,
   deleteCategory,
   insertCategory,
-} from "../../repositories/categories";
+} from "../../services/categories";
 
 const index = async (request: Request, response: Response) => {
   try {
@@ -19,9 +19,6 @@ const remove = async (request: Request, response: Response) => {
     const value = await deleteCategory(request.params.category);
     response.status(200).send(value);
   } catch (error) {
-    console.log(error);
-    console.log(error);
-
     response.send(error);
   }
 };
